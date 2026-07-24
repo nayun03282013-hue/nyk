@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>전국 학교 급식 알리미</title>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* Global Styles */
+    :root {
+      --primary-color: #16a34a;
+      --primary-light: #f0fdf4;
+      --primary-dark: #15803d;
+      --accent-color: #22c55e;
+      --danger-color: #ef4444;
+      --danger-light: #fef2f2;
+      --warning-color: #f59e0b;
+      --heart-color: #ec4899;
+      --heart-light: #fce7f3;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 4px 20px -2px rgba(22, 163, 74, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: auto 0;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: white;
+      padding: 24px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    /* Card Component */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Search Section */
+    .search-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .input-wrapper i.search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-sub);
+    }
+
+    input[type="text"], input[type="date"] {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+
+    input[type="date"] {
+      padding-left: 14px;
+    }
+
+    input[type="text"]:focus, input[type="date"]:focus {
+      border-color: var(--primary-color);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+
+    /* Selected School Info Badge */
+    .selected-school-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--primary-light);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .selected-school-badge span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* School Dropdown List */
+    .school-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-top: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 20;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      display: none;
+    }
+
+    .school-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .school-item:last-child {
+      border-bottom: none;
+    }
+
+    .school-item:hover {
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+    }
+
+    .school-item .office-name {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+    }
+
+    /* Meal Type Tabs */
+    .meal-tabs {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .meal-tab {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .meal-tab.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    /* Date Controller */
+    .date-controller {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn-icon {
+      background: var(--primary-light);
+      color: var(--primary-color);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #dcfce7;
+    }
+
+    /* Meal Info Container */
+    .meal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .meal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .calorie-badge {
+      font-size: 0.8rem;
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* One-line Review Box */
+    .meal-review-box {
+      background-color: var(--primary-light);
+      border: 1px solid #bbf7d0;
+      color: var(--primary-dark);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meal-review-box i {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+
+    /* Favorite Menu Alert Banner */
+    .favorite-alert-banner {
+      background-color: var(--heart-light);
+      border: 1px solid #fbcfe8;
+      color: var(--heart-color);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Allergy Warning Banner */
+    .allergy-alert-banner {
+      background-color: var(--danger-light);
+      border: 1px solid #fca5a5;
+      color: var(--danger-color);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .red-dot-legend {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: var(--danger-color);
+      border-radius: 50%;
+      margin-right: 2px;
+    }
+
+    /* Menu List */
+    .menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background-color: #f8fafc;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+
+    .menu-item.contains-my-allergy {
+      background-color: var(--danger-light);
+      border-color: #fca5a5;
+    }
+
+    .menu-name-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .menu-name-container i.utensils-icon {
+      color: var(--primary-color);
+      font-size: 0.9rem;
+    }
+
+    /* Heart / Favorite Button */
+    .btn-favorite {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      transition: transform 0.2s, color 0.2s;
+      padding: 2px 4px;
+    }
+
+    .btn-favorite:hover {
+      transform: scale(1.15);
+    }
+
+    .btn-favorite.active {
+      color: var(--heart-color);
+    }
+
+    /* Red Dot Indicator */
+    .red-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: var(--danger-color);
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    }
+
+    .allergy-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      justify-content: flex-end;
+      max-width: 40%;
+    }
+
+    .allergy-tag {
+      font-size: 0.7rem;
+      background-color: #e2e8f0;
+      color: var(--text-sub);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .allergy-tag.my-allergy {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--primary-color);
+    }
+
+    .loading-spinner i {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    /* Empty/Error State */
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-sub);
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: white;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    .action-btn:hover {
+      background-color: #f1f5f9;
+    }
+
+    .action-btn.active-filter {
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+      background-color: var(--danger-light);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      color: var(--primary-dark);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+
+    .allergy-selectable-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+
+    .allergy-checkbox-item {
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .allergy-checkbox-item:hover {
+      background-color: var(--primary-light);
+    }
+
+    .allergy-checkbox-item.selected {
+      border-color: var(--danger-color);
+      background-color: var(--danger-light);
+      color: var(--danger-color);
+      font-weight: 600;
+    }
+
+    .allergy-checkbox-item input {
+      display: none;
+    }
+
+    /* Notice box for photos */
+    .photo-notice {
+      background-color: #f1f5f9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 앱 헤더 -->
+    <header>
+      <h1><i class="fa-solid fa-leaf"></i> 전국 학교 급식 알리미</h1>
+      <p>나이스(NEIS) 오픈 API로 안심 급식을 조회하세요!</p>
+    </header>
+
+    <!-- 학교 및 날짜 선택 섹션 -->
+    <div class="card">
+      <div class="search-group">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="schoolInput" placeholder="학교명을 입력하세요 (예: 서울고, 경기고)" autocomplete="off">
+          <div id="schoolList" class="school-list"></div>
+        </div>
+
+        <div class="selected-school-badge" id="selectedSchoolBadge">
+          <span id="selectedSchoolText"><i class="fa-solid fa-school"></i> 서울고등학교</span>
+          <span style="font-weight: 400; font-size: 0.75rem; color: var(--text-sub);" id="selectedOfficeText">서울특별시교육청</span>
+        </div>
+      </div>
+
+      <!-- 식사 구분 탭 (중식 기본) -->
+      <div class="meal-tabs">
+        <div class="meal-tab" data-code="1">조식</div>
+        <div class="meal-tab active" data-code="2">중식</div>
+        <div class="meal-tab" data-code="3">석식</div>
+      </div>
+
+      <!-- 날짜 선택 조작 -->
+      <div class="date-controller">
+        <button class="btn-icon" id="prevDateBtn" title="이전 날짜"><i class="fa-solid fa-chevron-left"></i></button>
+        <input type="date" id="dateInput">
+        <button class="btn-icon" id="nextDateBtn" title="다음 날짜"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <!-- 급식 데이터 표시 섹션 -->
+    <div class="card" id="mealCard">
+      <div class="meal-header">
+        <div class="meal-title" id="mealTitle">
+          <i class="fa-solid fa-bowl-food"></i> 중식 메뉴
+        </div>
+        <div class="calorie-badge" id="calorieBadge" style="display: none;">- kcal</div>
+      </div>
+
+      <!-- 급식 한줄평 박스 -->
+      <div class="meal-review-box" id="mealReviewBox" style="display: none;">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span id="mealReviewText">식단 정보를 분석 중입니다...</span>
+      </div>
+
+      <!-- 좋아하는 메뉴 포함 알림 바 -->
+      <div class="favorite-alert-banner" id="favoriteAlertBanner" style="display: none;">
+        <i class="fa-solid fa-heart"></i>
+        <span>내가 좋아하는 메뉴가 포함되어 있어요! 🎉</span>
+      </div>
+
+      <!-- 내 알레르기 주의 경고 바 (빨간 점 의미 설명) -->
+      <div class="allergy-alert-banner" id="allergyAlertBanner" style="display: none;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span><span class="red-dot-legend"></span> 빨간 점은 내 알레르기 유발 재료가 포함된 음식입니다!</span>
+      </div>
+
+      <!-- 로딩 표시 -->
+      <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <p>나이스에서 급식 정보를 가져오는 중...</p>
+      </div>
+
+      <!-- 메뉴 목록 -->
+      <ul class="menu-list" id="menuList"></ul>
+
+      <!-- 정보 없음 상태 -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <i class="fa-regular fa-calendar-xmark"></i>
+        <p id="emptyMessage">해당 날짜의 급식 정보가 없습니다.</p>
+      </div>
+
+      <!-- 이미지 안내 문구 -->
+      <div class="photo-notice">
+        <i class="fa-solid fa-circle-info" style="margin-top: 2px; color: var(--primary-color);"></i>
+        <div>나이스 교육부 API 정책상 텍스트 식단이 제공됩니다. 학교 실제 사진은 교내 홈페이지에서 확인하실 수 있습니다.</div>
+      </div>
+    </div>
+
+    <!-- 하단 액션 버튼 그룹 -->
+    <div class="action-buttons">
+      <button class="action-btn" id="openModalBtn">
+        <i class="fa-solid fa-list-check"></i> 알레르기 범주 표
+      </button>
+      <button class="action-btn" id="openFilterModalBtn">
+        <i class="fa-solid fa-user-gear"></i> 내 알레르기 설정
+      </button>
+    </div>
+  </div>
+
+  <!-- 알레르기 범주안내 모달 -->
+  <div class="modal-overlay" id="allergyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-circle-info"></i> 알레르기 유발물질 번호 표</h3>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-sub);">교육부 나이스 표준 알레르기 번호 표기법입니다.</p>
+      <div class="allergy-selectable-grid" id="allergyGrid"></div>
+    </div>
+  </div>
+
+  <!-- 내 알레르기 필터 설정 모달 -->
+  <div class="modal-overlay" id="allergyFilterModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-shield"></i> 내 알레르기 설정</h3>
+        <button class="close-btn" id="closeFilterModalBtn">&times;</button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-sub);">주의해야 할 알레르기를 체크해 두시면 식단표에서 빨간 점으로 강조됩니다.</p>
+
+      <div class="allergy-selectable-grid" id="allergyFilterGrid"></div>
+
+      <button class="action-btn" id="saveFilterBtn" style="width: 100%; margin-top: 16px; background-color: var(--primary-color); color: white; border: none;">
+        설정 저장하기
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 1. 알레르기 표준 번호 데이터
+    const allergyList = {
+      1: "난류", 2: "우유", 3: "메밀", 4: "땅콩", 5: "대두",
+      6: "밀", 7: "고등어", 8: "게", 9: "새우", 10: "돼지고기",
+      11: "복숭아", 12: "토마토", 13: "아황산류", 14: "호두",
+      15: "닭고기", 16: "쇠고기", 17: "오징어", 18: "조개류", 19: "잣"
+    };
+
+    // 현재 선택된 학교 정보
+    let currentSchool = {
+      name: "서울고등학교",
+      officeCode: "B10",
+      schoolCode: "7010083",
+      officeName: "서울특별시교육청"
+    };
+
+    // 식사 구분 코드 (1: 조식, 2: 중식, 3: 석식)
+    let currentMealCode = "2";
+
+    // 사용자가 체크한 본인의 알레르기 번호 목록
+    let myAllergies = [];
+
+    // 사용자가 좋아하는 선호 메뉴 목록 (이름 기준)
+    let favoriteMenus = [];
+
+    // 검색 디바운싱 타이머
+    let searchDebounceTimer = null;
+
+    // DOM 요소
+    const schoolInput = document.getElementById('schoolInput');
+    const schoolList = document.getElementById('schoolList');
+    const selectedSchoolText = document.getElementById('selectedSchoolText');
+    const selectedOfficeText = document.getElementById('selectedOfficeText');
+    const dateInput = document.getElementById('dateInput');
+    const prevDateBtn = document.getElementById('prevDateBtn');
+    const nextDateBtn = document.getElementById('nextDateBtn');
+    const menuList = document.getElementById('menuList');
+    const calorieBadge = document.getElementById('calorieBadge');
+    const emptyState = document.getElementById('emptyState');
+    const emptyMessage = document.getElementById('emptyMessage');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const mealTitle = document.getElementById('mealTitle');
+    const mealReviewBox = document.getElementById('mealReviewBox');
+    const mealReviewText = document.getElementById('mealReviewText');
+    const favoriteAlertBanner = document.getElementById('favoriteAlertBanner');
+    const allergyAlertBanner = document.getElementById('allergyAlertBanner');
+
+    const allergyModal = document.getElementById('allergyModal');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const allergyGrid = document.getElementById('allergyGrid');
+
+    const allergyFilterModal = document.getElementById('allergyFilterModal');
+    const openFilterModalBtn = document.getElementById('openFilterModalBtn');
+    const closeFilterModalBtn = document.getElementById('closeFilterModalBtn');
+    const allergyFilterGrid = document.getElementById('allergyFilterGrid');
+    const saveFilterBtn = document.getElementById('saveFilterBtn');
+
+    // 앱 초기화
+    function init() {
+      // 오늘 날짜 세팅
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      dateInput.value = `${year}-${month}-${day}`;
+
+      setupAllergyGrid();
+      setupAllergyFilterGrid();
+      setupEventListeners();
+      updateSchoolBadge();
+      fetchMealData();
+    }
+
+    // 알레르기 안내 표 생성
+    function setupAllergyGrid() {
+      allergyGrid.innerHTML = '';
+      for (const [code, name] of Object.entries(allergyList)) {
+        const item = document.createElement('div');
+        item.style.cssText = "background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0;";
+        item.innerHTML = `<strong>${code}.</strong> ${name}`;
+        allergyGrid.appendChild(item);
+      }
+    }
+
+    // 사용자 알레르기 설정 그리드 생성
+    function setupAllergyFilterGrid() {
+      allergyFilterGrid.innerHTML = '';
+      for (const [code, name] of Object.entries(allergyList)) {
+        const numCode = Number(code);
+        const item = document.createElement('label');
+        item.className = `allergy-checkbox-item ${myAllergies.includes(numCode) ? 'selected' : ''}`;
+        item.innerHTML = `
+          <input type="checkbox" value="${numCode}" ${myAllergies.includes(numCode) ? 'checked' : ''}>
+          <span><strong>${code}.</strong> ${name}</span>
+        `;
+
+        item.querySelector('input').addEventListener('change', (e) => {
+          if (e.target.checked) {
+            item.classList.add('selected');
+          } else {
+            item.classList.remove('selected');
+          }
+        });
+
+        allergyFilterGrid.appendChild(item);
+      }
+    }
+
+    // 이벤트 리스너 세팅
+    function setupEventListeners() {
+      // 학교 검색
+      schoolInput.addEventListener('input', (e) => {
+        clearTimeout(searchDebounceTimer);
+        const query = e.target.value.trim();
+        if (query.length < 2) {
+          schoolList.style.display = 'none';
+          return;
+        }
+        searchDebounceTimer = setTimeout(() => searchSchool(query), 300);
+      });
+
+      // 날짜 변경
+      dateInput.addEventListener('change', fetchMealData);
+      prevDateBtn.addEventListener('click', () => changeDate(-1));
+      nextDateBtn.addEventListener('click', () => changeDate(1));
+
+      // 식사 종류 선택 탭
+      document.querySelectorAll('.meal-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+          e.target.classList.add('active');
+          currentMealCode = e.target.dataset.code;
+          
+          const mealNames = { "1": "조식", "2": "중식", "3": "석식" };
+          mealTitle.innerHTML = `<i class="fa-solid fa-bowl-food"></i> ${mealNames[currentMealCode]} 메뉴`;
+          
+          fetchMealData();
+        });
+      });
+
+      // 바깥 클릭 시 학교 드롭다운 닫기
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.input-wrapper')) {
+          schoolList.style.display = 'none';
+        }
+      });
+
+      // 모달 제어
+      openModalBtn.addEventListener('click', () => allergyModal.classList.add('active'));
+      closeModalBtn.addEventListener('click', () => allergyModal.classList.remove('active'));
+
+      openFilterModalBtn.addEventListener('click', () => allergyFilterModal.classList.add('active'));
+      closeFilterModalBtn.addEventListener('click', () => allergyFilterModal.classList.remove('active'));
+
+      // 필터 저장 버튼
+      saveFilterBtn.addEventListener('click', () => {
+        const checkedBoxes = allergyFilterGrid.querySelectorAll('input[type="checkbox"]:checked');
+        myAllergies = Array.from(checkedBoxes).map(cb => Number(cb.value));
+
+        if (myAllergies.length > 0) {
+          openFilterModalBtn.classList.add('active-filter');
+          openFilterModalBtn.innerHTML = `<i class="fa-solid fa-user-check"></i> 내 알레르기 (${myAllergies.length})`;
+        } else {
+          openFilterModalBtn.classList.remove('active-filter');
+          openFilterModalBtn.innerHTML = `<i class="fa-solid fa-user-gear"></i> 내 알레르기 설정`;
+        }
+
+        allergyFilterModal.classList.remove('active');
+        fetchMealData();
+      });
+    }
+
+    // 학교 실시간 검색 API
+    async function searchSchool(query) {
+      try {
+        const url = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=10&SCHUL_NM=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) {
+          renderSchoolList(data.schoolInfo[1].row);
+        } else {
+          schoolList.innerHTML = '<div class="school-item"><span style="color:var(--text-sub);">검색 결과가 없습니다.</span></div>';
+          schoolList.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('학교 검색 오류:', error);
+      }
+    }
+
+    // 학교 목록 드롭다운
+    function renderSchoolList(schools) {
+      schoolList.innerHTML = '';
+      schools.forEach(school => {
+        const item = document.createElement('div');
+        item.className = 'school-item';
+        item.innerHTML = `
+          <strong>${school.SCHUL_NM}</strong>
+          <span class="office-name">${school.ATPT_OFCDC_SC_NM} (${school.LCTN_SC_NM || '소재지'})</span>
+        `;
+        item.addEventListener('click', () => {
+          currentSchool = {
+            name: school.SCHUL_NM,
+            officeCode: school.ATPT_OFCDC_SC_CODE,
+            schoolCode: school.SD_SCHUL_CODE,
+            officeName: school.ATPT_OFCDC_SC_NM
+          };
+          updateSchoolBadge();
+          schoolInput.value = '';
+          schoolList.style.display = 'none';
+          fetchMealData();
+        });
+        schoolList.appendChild(item);
+      });
+      schoolList.style.display = 'block';
+    }
+
+    function updateSchoolBadge() {
+      selectedSchoolText.innerHTML = `<i class="fa-solid fa-school"></i> ${currentSchool.name}`;
+      selectedOfficeText.textContent = currentSchool.officeName;
+    }
+
+    function changeDate(offset) {
+      const currentDate = new Date(dateInput.value);
+      currentDate.setDate(currentDate.getDate() + offset);
+      
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      
+      dateInput.value = `${year}-${month}-${day}`;
+      fetchMealData();
+    }
+
+    // 나이스 급식 API 호출
+    async function fetchMealData() {
+      const ymd = dateInput.value.replace(/-/g, '');
+      
+      menuList.innerHTML = '';
+      calorieBadge.style.display = 'none';
+      mealReviewBox.style.display = 'none';
+      favoriteAlertBanner.style.display = 'none';
+      emptyState.style.display = 'none';
+      allergyAlertBanner.style.display = 'none';
+      loadingSpinner.style.display = 'block';
+
+      try {
+        const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=10&ATPT_OFCDC_SC_CODE=${currentSchool.officeCode}&SD_SCHUL_CODE=${currentSchool.schoolCode}&MLSV_YMD=${ymd}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        loadingSpinner.style.display = 'none';
+
+        if (data.mealServiceDietInfo && data.mealServiceDietInfo[1] && data.mealServiceDietInfo[1].row) {
+          const meals = data.mealServiceDietInfo[1].row;
+          const targetMeal = meals.find(m => m.MMEAL_SC_CODE === currentMealCode);
+
+          if (targetMeal && targetMeal.DDISH_NM) {
+            renderMealList(targetMeal.DDISH_NM, targetMeal.CAL_INFO);
+          } else {
+            showEmptyState("해당 식사의 급식 정보가 없습니다.");
+          }
+        } else {
+          showEmptyState("해당 날짜의 급식 정보가 없습니다. (주말/휴교일/방학)");
+        }
+      } catch (error) {
+        console.error('급식 불러오기 에러:', error);
+        loadingSpinner.style.display = 'none';
+        showEmptyState("급식 정보를 불러오는 중 오류가 발생했습니다.");
+      }
+    }
+
+    // 급식 메뉴 분석 및 자동 한줄평 생성
+    function generateMealReview(dishes) {
+      const fullMenuStr = dishes.map(d => parseDishString(d).name).join(' ');
+      
+      if (fullMenuStr.includes('치킨') || fullMenuStr.includes('돈까스') || fullMenuStr.includes('불고기') || fullMenuStr.includes('갈비')) {
+        return "✨ 인기 든든 육류 메뉴 등장! 오늘 급식 만족도 UP! 😋";
+      } else if (fullMenuStr.includes('비빔밥') || fullMenuStr.includes('덮밥') || fullMenuStr.includes('볶음밥') || fullMenuStr.includes('카레')) {
+        return "🍚 매콤달콤 한 그릇 일품요리데이! 맛있고 가볍게 뚝딱!";
+      } else if (fullMenuStr.includes('찌개') || fullMenuStr.includes('탕') || fullMenuStr.includes('국')) {
+        return "🍲 뜨끈한 국물과 조화로운 한식 영양 가득 상차림!";
+      } else if (fullMenuStr.includes('스파게티') || fullMenuStr.includes('파스타') || fullMenuStr.includes('라멘') || fullMenuStr.includes('우동')) {
+        return "🍝 신나는 면 요리 특식! 즐겁고 맛있는 식사 시간 보내세요!";
+      } else {
+        return "🥗 탄단지 조화로운 건강 만점 알찬 학교 급식 식단!";
+      }
+    }
+
+    // 급식 목록 렌더링
+    function renderMealList(ddishNm, calInfo) {
+      if (calInfo) {
+        calorieBadge.textContent = calInfo;
+        calorieBadge.style.display = 'inline-block';
+      }
+
+      const dishes = ddishNm.split(/<br\s*\/?>/i);
+      let hasMyAllergyRisk = false;
+      let hasFavoriteMenu = false;
+
+      // 급식 한줄평 표시
+      const reviewText = generateMealReview(dishes);
+      mealReviewText.textContent = reviewText;
+      mealReviewBox.style.display = 'flex';
+
+      dishes.forEach(dishStr => {
+        if (!dishStr.trim()) return;
+
+        const parsed = parseDishString(dishStr);
+
+        // 내 주의 알레르기 항목 포함 여부 확인
+        const containsMyAllergy = parsed.allergies.some(code => myAllergies.includes(code));
+        if (containsMyAllergy) {
+          hasMyAllergyRisk = true;
+        }
+
+        // 좋아하는 메뉴 여부 확인
+        const isFav = favoriteMenus.includes(parsed.name);
+        if (isFav) {
+          hasFavoriteMenu = true;
+        }
+
+        const li = document.createElement('li');
+        li.className = `menu-item ${containsMyAllergy ? 'contains-my-allergy' : ''}`;
+
+        // 알레르기 태그
+        const allergyTagsHTML = parsed.allergies.length > 0
+          ? parsed.allergies.map(code => {
+              const isMine = myAllergies.includes(code);
+              return `<span class="allergy-tag ${isMine ? 'my-allergy' : ''}" title="${allergyList[code] || ''}">${code}.${allergyList[code] || ''}</span>`;
+            }).join('')
+          : '';
+
+        // 알레르기 유발 시 음식 이름 옆에 빨간 점 표시
+        const redDotHTML = containsMyAllergy ? `<span class="red-dot" title="주의: 설정한 알레르기 유발 식품 포함"></span>` : '';
+
+        // 하트 버튼 HTML
+        const favoriteBtnHTML = `
+          <button class="btn-favorite ${isFav ? 'active' : ''}" title="${isFav ? '좋아하는 메뉴 해제' : '좋아하는 메뉴 추가'}">
+            <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+          </button>
+        `;
+
+        li.innerHTML = `
+          <div class="menu-name-container">
+            ${favoriteBtnHTML}
+            ${redDotHTML}
+            <i class="fa-solid fa-utensils utensils-icon"></i>
+            <span>${parsed.name}</span>
+          </div>
+          <div class="allergy-tags">${allergyTagsHTML}</div>
+        `;
+
+        // 하트 버튼 클릭 이벤트 처리
+        const favBtn = li.querySelector('.btn-favorite');
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFavoriteMenu(parsed.name);
+        });
+
+        menuList.appendChild(li);
+      });
+
+      if (hasFavoriteMenu) {
+        favoriteAlertBanner.style.display = 'flex';
+      }
+
+      if (hasMyAllergyRisk) {
+        allergyAlertBanner.style.display = 'flex';
+      }
+    }
+
+    // 선호 메뉴 토글 함수
+    function toggleFavoriteMenu(menuName) {
+      const idx = favoriteMenus.indexOf(menuName);
+      if (idx > -1) {
+        favoriteMenus.splice(idx, 1);
+      } else {
+        favoriteMenus.push(menuName);
+      }
+      fetchMealData(); // 화면 갱신
+    }
+
+    // 요리명 가공 함수
+    function parseDishString(str) {
+      let cleanStr = str.replace(/&amp;/g, '&').trim();
+      const allergyMatch = cleanStr.match(/([0-9\.]+)\.?$/);
+      let allergies = [];
+      let name = cleanStr;
+
+      if (allergyMatch) {
+        const numbersStr = allergyMatch[1];
+        allergies = numbersStr.split('.')
+          .filter(num => num.length > 0 && !isNaN(num))
+          .map(Number);
+
+        name = cleanStr.replace(/([0-9\.]+)\.?$/, '').trim();
+      }
+
+      name = name.replace(/\(\)/g, '').trim();
+
+      return { name, allergies };
+    }
+
+    function showEmptyState(msg) {
+      emptyMessage.textContent = msg;
+      emptyState.style.display = 'block';
+      mealReviewBox.style.display = 'none';
+      favoriteAlertBanner.style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
